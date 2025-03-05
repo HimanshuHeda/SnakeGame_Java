@@ -20,10 +20,17 @@ public class Board extends JPanel implements ActionListener {
     private final int x[] = new int[ALL_DOTS];
     private final int y[] = new int[ALL_DOTS];
     
+    private boolean leftDirection = false;
+    private boolean rightDirection = true;
+    private boolean upDirection = false;
+    private boolean downDirection = false;
+    
     private int dots;
     private Timer timer;
     
     Board(){
+        addKeyListener(new TAdepter());
+        
         setBackground(Color.BLACK);
         setFocusable(true);
         
@@ -90,17 +97,57 @@ public class Board extends JPanel implements ActionListener {
     public void move(){
         for (int i = dots; i > 0; i--){
             x[i] = x[i - 1];
-            y[i] = y[i - 1];
-            
+            y[i] = y[i - 1];   
         }
         
-        x[0] += DOT_SIZE;
-        y[0] += DOT_SIZE;
+        if(leftDirection) {
+            x[0] = x[0] - DOT_SIZE;
+        }
+        if(rightDirection) {
+            x[0] = x[0] + DOT_SIZE;
+        }
+        if(upDirection) {
+            y[0] = y[0] - DOT_SIZE;
+        }
+        if(downDirection) {
+            y[0] = y[0] + DOT_SIZE;
+        }
     }
     
     public void actionPerformed(ActionEvent ae){
         move();
         
         repaint();
+    }
+    
+    public class TAdepter extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e){
+            int key = e.getKeyCode();
+            
+            if (key == KeyEvent.VK_LEFT && (!rightDirection)){
+                leftDirection = true;
+                upDirection = false;
+                downDirection = false;
+            }
+            
+            if (key == KeyEvent.VK_RIGHT && (!leftDirection)){
+                rightDirection = true;
+                upDirection = false;
+                downDirection = false;
+            }
+            
+            if (key == KeyEvent.VK_UP && (!downDirection)){
+                upDirection = true;
+                leftDirection = false;
+                rightDirection = false;
+            }
+            
+            if (key == KeyEvent.VK_DOWN && (!upDirection)){
+                downDirection = true;
+                leftDirection = false;
+                rightDirection = false;
+            }
+        }
     }
 }
