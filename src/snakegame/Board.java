@@ -13,6 +13,8 @@ public class Board extends JPanel implements ActionListener {
     private final int ALL_DOTS = 900;
     private final int DOT_SIZE = 10;
     private final int RANDOM_POSITION = 29;
+    private final int BOARD_WIDTH = 300;
+    private final int BOARD_HEIGHT = 300;
     
     private int apple_x;
     private int apple_y;
@@ -24,21 +26,22 @@ public class Board extends JPanel implements ActionListener {
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
+    private boolean inGame = true;
     
     private int dots;
     private Timer timer;
     
-    Board(){
-        addKeyListener(new TAdepter());
-        
+    Board() {
+        addKeyListener(new TAdapter());
         setBackground(Color.BLACK);
         setFocusable(true);
+        setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
         
         loadImages();
         initGame();
     }
     
-    public void loadImages(){
+    public void loadImages() {
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("snakeGame/icons/apple.png"));
         apple = i1.getImage();
         
@@ -49,101 +52,140 @@ public class Board extends JPanel implements ActionListener {
         head = i3.getImage();
     }
     
-    public void initGame(){
+    public void initGame() {
         dots = 3;
         
-        for (int i = 0 ; i < dots ; i++){
+        for (int i = 0; i < dots; i++) {
             y[i] = 50;
             x[i] = 50 - i * DOT_SIZE;
-            
         }
         
         locateApple();
         
         timer = new Timer(140, this);
         timer.start();
-        
     }
     
     public void locateApple() {
-        int r = (int)(Math.random() * RANDOM_POSITION);
+        int r = (int) (Math.random() * RANDOM_POSITION);
         apple_x = r * DOT_SIZE;
                 
-        r = (int)(Math.random() * RANDOM_POSITION);
+        r = (int) (Math.random() * RANDOM_POSITION);
         apple_y = r * DOT_SIZE;
     }
     
-    public void paintComponent(Graphics g){
+    @Override
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        draw(g);
+        if (inGame) {
+            draw(g);
+        } else {
+            gameOver(g);
+        }
     }
-    public void draw(Graphics g){
+    
+    public void draw(Graphics g) {
         g.drawImage(apple, apple_x, apple_y, this);
         
-        for (int i = 0; i < dots; i++){
+        for (int i = 0; i < dots; i++) {
             if (i == 0) {
                 g.drawImage(head, x[i], y[i], this);
-            }
-            else {
+            } else {
                 g.drawImage(dot, x[i], y[i], this);
             }
         }
         
-        // Initialize it with Default Toolkit 
         Toolkit.getDefaultToolkit().sync();
     }
     
-    public void move(){
-        for (int i = dots; i > 0; i--){
+    public void move() {
+        for (int i = dots - 1; i > 0; i--) { 
             x[i] = x[i - 1];
-            y[i] = y[i - 1];   
+            y[i] = y[i - 1];
         }
         
-        if(leftDirection) {
-            x[0] = x[0] - DOT_SIZE;
+        if (leftDirection) {
+            x[0] -= DOT_SIZE;
         }
-        if(rightDirection) {
-            x[0] = x[0] + DOT_SIZE;
+        if (rightDirection) {
+            x[0] += DOT_SIZE;
         }
-        if(upDirection) {
-            y[0] = y[0] - DOT_SIZE;
+        if (upDirection) {
+            y[0] -= DOT_SIZE;
         }
-        if(downDirection) {
-            y[0] = y[0] + DOT_SIZE;
+        if (downDirection) {
+            y[0] += DOT_SIZE;
         }
     }
     
-    public void actionPerformed(ActionEvent ae){
-        move();
-        
+    public void checkApple() {
+        if ((x[0] == apple_x) && (y[0] == apple_y)) {
+            dots++;
+            locateApple();
+        }
+    }
+    
+    public void checkCollision() {
+        for (int i = dots; i > 0; i--) {
+            if (i > 3 && x[0] == x[i] && y[0] == y[i]) {
+                inGame = false;
+            }
+        }
+
+        if (x[0] >= BOARD_WIDTH || x[0] < 0 || y[0] >= BOARD_HEIGHT || y[0] < 0) {
+            inGame = false;
+        }
+
+        if (!inGame) {
+            timer.stop();
+        }
+    }
+    
+    public void gameOver(Graphics g) {
+        String msg = "Game Over..!";
+        Font font = new Font("Helvetica", Font.BOLD, 20);
+        FontMetrics metrics = getFontMetrics(font);
+
+        g.setColor(Color.RED);
+        g.setFont(font);
+        g.drawString(msg, (BOARD_WIDTH - metrics.stringWidth(msg)) / 2, BOARD_HEIGHT / 2);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        if (inGame) {
+            checkApple();
+            move();
+            checkCollision();
+        }
         repaint();
     }
     
-    public class TAdepter extends KeyAdapter {
+    private class TAdapter extends KeyAdapter {
         @Override
-        public void keyPressed(KeyEvent e){
+        public void keyPressed(KeyEvent e) {
             int key = e.getKeyCode();
             
-            if (key == KeyEvent.VK_LEFT && (!rightDirection)){
+            if (key == KeyEvent.VK_LEFT && (!rightDirection)) {
                 leftDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
             
-            if (key == KeyEvent.VK_RIGHT && (!leftDirection)){
+            if (key == KeyEvent.VK_RIGHT && (!leftDirection)) {
                 rightDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
             
-            if (key == KeyEvent.VK_UP && (!downDirection)){
+            if (key == KeyEvent.VK_UP && (!downDirection)) {
                 upDirection = true;
                 leftDirection = false;
                 rightDirection = false;
             }
             
-            if (key == KeyEvent.VK_DOWN && (!upDirection)){
+            if (key == KeyEvent.VK_DOWN && (!upDirection)) {
                 downDirection = true;
                 leftDirection = false;
                 rightDirection = false;
