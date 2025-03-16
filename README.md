@@ -1,7 +1,3 @@
-Here's a well-structured **README.md** file for your **Snake Game** GitHub repository:  
-
----
-
 # 🐍 Snake Game – Java Arcade Game  
 
 A **classic Snake Game** built using **Java** with **Swing and AWT**, featuring smooth gameplay, intuitive controls, and increasing difficulty. This project demonstrates **object-oriented programming (OOP)** concepts and **event-driven game development**.  
